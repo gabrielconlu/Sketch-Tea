@@ -29,8 +29,16 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## Deploy on Render
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This repository includes a [`render.yaml`](./render.yaml) Blueprint for a Node.js web service. In Render, choose **New > Blueprint**, connect this repository, and apply the Blueprint. Do not deploy it as a Python service or a static site. If you already created a Python service, create this Blueprint as a separate service; the YAML does not convert an existing service's runtime.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+During the initial Blueprint setup, provide values for the prompted environment variables:
+
+- `DB_PASSWORD`: the Aiven database password.
+- `EMAIL_USER` and `EMAIL_PASS`: Gmail account credentials (use a Gmail app password).
+- `RESEND_API_KEY`: the Resend API key used for order email.
+
+Render generates `SESSION_SECRET` automatically. The Blueprint includes the existing database host, user, database name, and port. Confirm these match your database account before deploying. `ADMIN_EMAIL` is optional; if omitted, order notifications use `EMAIL_USER`.
+
+The service uses `npm ci && npm run build` to build and `npm start` to run the Next.js server. Do not commit `.env.local` or secret values.
