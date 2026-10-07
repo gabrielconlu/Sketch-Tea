@@ -20,11 +20,11 @@ export async function GET(req) {
         let query = '';
         let queryParams = [];
 
-        // Build a strict query based on what is actually provided to avoid cross-contamination
+        // Strictly query by email or userId without fuzzy prefix matching
         if (email && userId) {
             query = `
                 SELECT * FROM service_orders 
-                WHERE contact_email = ? OR user_id = ? 
+                WHERE (contact_email = ? OR user_id = ?) 
                 ORDER BY id DESC
             `;
             queryParams = [email, userId];

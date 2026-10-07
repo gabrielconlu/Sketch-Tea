@@ -1,31 +1,85 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function LoginPage() {
     const router = useRouter();
-    const [formData, setFormData] = useState({ email: '', password: '' });
+    const [csrfToken, setCsrfToken] = useState('');
+    const [formData, setFormData] = useState(() => {
+        if (typeof window === 'undefined') {
+            return { email: '', password: '' };
+        }
+
+        return {
+            email: localStorage.getItem('rememberedEmail') || '',
+            password: ''
+        };
+    });
     const [status, setStatus] = useState({ type: '', text: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isDarkMode, setIsDarkMode] = useState(true);
+    const [rememberMe, setRememberMe] = useState(() => {
+        if (typeof window === 'undefined') {
+            return false;
+        }
+
+        return localStorage.getItem('rememberMe') === 'true';
+    });
+
+    useEffect(() => {
+        fetch('/api/csrf', { credentials: 'include' })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data?.csrfToken) {
+                    setCsrfToken(data.csrfToken);
+                }
+            })
+            .catch(() => undefined);
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+
+        if (name === 'email' && rememberMe) {
+            localStorage.setItem('rememberedEmail', value);
+        }
+    };
+
+    const handleRememberMeToggle = (e) => {
+        const checked = e.target.checked;
+        setRememberMe(checked);
+
+        if (checked) {
+            localStorage.setItem('rememberMe', 'true');
+            localStorage.setItem('rememberedEmail', formData.email);
+        } else {
+            localStorage.removeItem('rememberMe');
+            localStorage.removeItem('rememberedEmail');
+        }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setStatus({ type: '', text: '' });
+
+        if (!csrfToken) {
+            setStatus({ type: 'error', text: 'Security token missing. Please refresh the page.' });
+            return;
+        }
+
         setIsSubmitting(true);
         setStatus({ type: '', text: 'Logging in...' });
 
         try {
             const response = await fetch('/api/users/login', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-csrf-token': csrfToken,
+                },
                 body: JSON.stringify(formData)
             });
 
@@ -33,7 +87,19 @@ export default function LoginPage() {
 
             if (response.ok && result.success) {
                 setStatus({ type: 'success', text: 'Login successful! Redirecting...' });
+
+                if (rememberMe) {
+                    localStorage.setItem('rememberMe', 'true');
+                    localStorage.setItem('rememberedEmail', formData.email);
+                } else {
+                    localStorage.removeItem('rememberMe');
+                    localStorage.removeItem('rememberedEmail');
+                }
+
                 localStorage.setItem('user', JSON.stringify(result.user));
+                localStorage.setItem('isLoggedIn', 'true');
+                window.dispatchEvent(new Event('authChange'));
+
                 setTimeout(() => {
                     router.push('/');
                 }, 1000);
@@ -49,91 +115,92 @@ export default function LoginPage() {
     };
 
     return (
-        <div className={`font-['Manrope',sans-serif] min-h-screen flex flex-col transition-colors duration-300 ${isDarkMode ? 'bg-[#122b2a] text-white' : 'bg-[#f4f9f9] text-[#122b2a]'}`}>
-            
-            {/* Top Navigation Bar */}
-            <header className={`w-full flex items-center justify-between p-[20px_40px] border-b ${isDarkMode ? 'border-[rgba(203,243,240,0.1)]' : 'border-[rgba(18,43,42,0.1)]'}`}>
-                {/* Top Left: Back Home / Menu */}
-                <div className="flex items-center gap-4">
-                    <Link href="/" className={`p-[10px_18px] rounded-xl border text-[0.9rem] font-semibold transition hover:scale-105 ${isDarkMode ? 'border-[rgba(203,243,240,0.2)] bg-[rgba(18,43,42,0.5)] text-[#CBF3F0]' : 'border-[rgba(18,43,42,0.2)] bg-white text-[#122b2a]'}`}>
-                        ← Home
-                    </Link>
+        <div className="flex min-h-[80vh] items-center justify-center px-4 py-8 sm:px-6">
+            <div className="relative w-full max-w-[440px] overflow-hidden rounded-[26px] border border-[var(--glass-border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02))] p-5 shadow-[var(--shadow)] backdrop-blur-[16px] sm:p-7">
+                <div className="relative mb-6 text-center">
+                    <div className="mb-3 inline-flex items-center justify-center rounded-full border border-[var(--glass-border)] bg-[var(--paper2)] px-3 py-1.5 text-[0.65rem] font-bold uppercase tracking-[0.16em] text-[var(--accent3)]">
+                        Sketch Tea
+                    </div>
+                    <h2 className="text-[clamp(2rem,4vw,2.6rem)] font-bold leading-none text-[var(--text)] font-serif">
+                        Welcome Back
+                    </h2>
                 </div>
 
-                {/* Center: Brand Name */}
-                <Link href="/" className="text-[1.6rem] font-bold font-serif tracking-wide text-[#FF9F1C]">
-                    Sketch Tea
-                </Link>
-
-                {/* Top Right: Circular Theme Toggle Icon */}
-                <button 
-                    onClick={() => setIsDarkMode(!isDarkMode)}
-                    title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-                    className={`w-[48px] h-[48px] rounded-full border flex items-center justify-center text-[1.2rem] transition transform hover:scale-110 shadow-md ${
-                        isDarkMode 
-                            ? 'border-[rgba(203,243,240,0.3)] bg-[rgba(18,43,42,0.8)] text-[#FF9F1C]' 
-                            : 'border-[rgba(18,43,42,0.2)] bg-white text-[#FF9F1C]'
-                    }`}
-                >
-                    {isDarkMode ? '☀️' : '🌙'}
-                </button>
-            </header>
-
-            {/* Main Content Area */}
-            <main className="flex-1 flex flex-col items-center justify-center p-[40px_20px]">
-                <div className={`w-full max-w-[450px] backdrop-blur-[20px] border rounded-[28px] p-[40px_32px] shadow-[0_25px_60px_rgba(0,0,0,0.30)] ${isDarkMode ? 'bg-[rgba(18,43,42,0.85)] border-[rgba(203,243,240,0.20)]' : 'bg-white border-[rgba(18,43,42,0.1)]'}`}>
-                    <h2 className="text-[2.2rem] font-bold mb-5 text-center font-serif text-[#FF9F1C]">Welcome Back</h2>
-                    
-                    {status.text && (
-                        <div className={`p-[12px_16px] rounded-[12px] text-[0.9rem] mb-5 text-center font-semibold border ${
-                            status.type === 'success' 
-                                ? 'bg-[rgba(46,204,113,0.15)] text-[#2ecc71] border-[rgba(46,204,113,0.3)]' 
+                {status.text && (
+                    <div
+                        className={`relative mb-4 rounded-xl border p-[10px_14px] text-center text-[0.85rem] font-semibold ${
+                            status.type === 'success'
+                                ? 'border-[rgba(46,204,113,0.28)] bg-[rgba(46,204,113,0.12)] text-[#2ecc71]'
                                 : status.type === 'error'
-                                ? 'bg-[rgba(231,76,60,0.15)] text-[#e74c3c] border-[rgba(231,76,60,0.3)]'
-                                : 'bg-[rgba(255,159,28,0.15)] text-[#FF9F1C] border-[rgba(255,159,28,0.3)]'
-                        }`}>
-                            {status.text}
-                        </div>
-                    )}
+                                ? 'border-[rgba(231,76,60,0.28)] bg-[rgba(231,76,60,0.12)] text-[#e74c3c]'
+                                : 'border-[rgba(255,159,28,0.28)] bg-[rgba(255,159,28,0.12)] text-[var(--accent3)]'
+                        }`}
+                    >
+                        {status.text}
+                    </div>
+                )}
 
-                    <form onSubmit={handleSubmit}>
-                        <div className="mb-[18px]">
-                            <label className="block mb-[6px] text-[0.9rem] font-semibold">Email Address</label>
-                            <input 
-                                type="email" 
-                                name="email"
-                                value={formData.email} 
-                                onChange={handleChange} 
-                                required 
-                                className={`w-full p-[14px_18px] rounded-[12px] border outline-none focus:border-[#FF9F1C] focus:ring-[3px] focus:ring-[rgba(255,159,28,0.2)] ${isDarkMode ? 'border-[rgba(203,243,240,0.20)] bg-[#0b1c1b] text-white' : 'border-gray-300 bg-gray-50 text-black'}`}
+                <form onSubmit={handleSubmit} className="relative space-y-4">
+                    <div>
+                        <label className="mb-2 block text-[0.78rem] font-semibold tracking-[0.02em] text-[var(--text)]">
+                            Email Address
+                        </label>
+                        <input
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            required
+                            className="w-full rounded-xl border border-[var(--glass-border)] bg-[var(--paper2)] px-3.5 py-3 text-[0.95rem] text-[var(--text)] outline-none transition focus:border-[var(--accent3)] focus:ring-3 focus:ring-[rgba(255,159,28,0.15)]"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="mb-2 block text-[0.78rem] font-semibold tracking-[0.02em] text-[var(--text)]">
+                            Password
+                        </label>
+                        <input
+                            type="password"
+                            name="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            required
+                            className="w-full rounded-xl border border-[var(--glass-border)] bg-[var(--paper2)] px-3.5 py-3 text-[0.95rem] text-[var(--text)] outline-none transition focus:border-[var(--accent3)] focus:ring-3 focus:ring-[rgba(255,159,28,0.15)]"
+                        />
+                    </div>
+
+                    <div className="flex items-center justify-between gap-3 text-[0.88rem] text-[var(--text)]/75">
+                        <label className="flex items-center gap-2">
+                            <input
+                                type="checkbox"
+                                checked={rememberMe}
+                                onChange={handleRememberMeToggle}
+                                className="h-4 w-4 rounded border-[var(--glass-border)] text-[var(--accent3)] focus:ring-[var(--accent3)]"
                             />
-                        </div>
-                        <div className="mb-[24px]">
-                            <label className="block mb-[6px] text-[0.9rem] font-semibold">Password</label>
-                            <input 
-                                type="password" 
-                                name="password"
-                                value={formData.password} 
-                                onChange={handleChange} 
-                                required 
-                                className={`w-full p-[14px_18px] rounded-[12px] border outline-none focus:border-[#FF9F1C] focus:ring-[3px] focus:ring-[rgba(255,159,28,0.2)] ${isDarkMode ? 'border-[rgba(203,243,240,0.20)] bg-[#0b1c1b] text-white' : 'border-gray-300 bg-gray-50 text-black'}`}
-                            />
-                        </div>
+                            Remember me
+                        </label>
 
-                        <button 
-                            type="submit" 
-                            disabled={isSubmitting}
-                            className="w-full p-[14px_32px] rounded-full font-bold cursor-pointer transition duration-350 bg-[#FF9F1C] text-white hover:bg-[#e58a0f] hover:-translate-y-[3px] disabled:opacity-70"
-                        >
-                            {isSubmitting ? 'Logging in...' : 'Login'}
-                        </button>
-                    </form>
+                        <Link href="/forgot-password" className="font-medium text-[var(--accent3)] hover:underline">
+                            Forgot password?
+                        </Link>
+                    </div>
 
-                    <p className="text-center mt-6 text-[0.9rem] opacity-80">
-                        Don't have an account? <Link href="/register" className="text-[#FF9F1C] underline font-semibold">Sign up</Link>
-                    </p>
-                </div>
-            </main>
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full rounded-full bg-[linear-gradient(135deg,#ffb347,#ff9f1c)] px-5 py-3.5 text-base font-bold text-white shadow-[0_10px_22px_rgba(255,159,28,0.28)] transition hover:translate-y-[-1px] hover:opacity-98 disabled:opacity-70"
+                    >
+                        {isSubmitting ? 'Logging in...' : 'Login'}
+                    </button>
+                </form>
+
+                <p className="relative mt-5 text-center text-[0.9rem] text-[var(--text)]/75">
+                    Don’t have an account?{' '}
+                    <Link href="/register" className="font-bold text-[var(--accent3)] underline underline-offset-4">
+                        Sign up
+                    </Link>
+                </p>
+            </div>
         </div>
     );
 }

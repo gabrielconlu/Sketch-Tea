@@ -102,7 +102,7 @@ export async function POST(req) {
 
         return NextResponse.json({
             success: true,
-            message: 'Order submitted and emails sent successfully!',
+            message: 'Order submitted!',
             referenceCode: referenceCode,
             orderId: orderId
         });

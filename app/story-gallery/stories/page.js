@@ -94,7 +94,7 @@ export default function SpiritGardenSeriesPage() {
                 onClick={() => setSidebarOpen(false)}
             ></div>
 
-            <aside className={`fixed top-0 left-0 w-[300px] h-screen bg-[var(--glass)] backdrop-blur-[25px] border-r border-[var(--glass-border)] z-[6001] p-[40px_30px] flex flex-col gap-[30px] transition-transform duration-400 shadow-[var(--shadow)] ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+            <aside className={`fixed top-0 left-0 w-[300px] max-w-[90vw] h-[100dvh] overflow-y-auto bg-[var(--glass)] backdrop-blur-[25px] border-r border-[var(--glass-border)] z-[6001] p-[28px_20px] sm:p-[40px_30px] flex flex-col gap-[30px] transition-transform duration-400 shadow-[var(--shadow)] ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="flex justify-between items-center border-b border-[var(--glass-border)] pb-[15px]">
                     <Link href={isLoggedIn ? '/about' : '/'} onClick={handleLogoClick} className="font-serif text-[2.2rem] font-bold text-[var(--text)] no-underline">
                         Sketch <span className="text-[var(--accent3)]">Tea</span>
@@ -133,14 +133,14 @@ export default function SpiritGardenSeriesPage() {
 
             {/* Header */}
             <header className="fixed top-0 left-0 w-full z-[5000] backdrop-blur-[18px] bg-[var(--glass)] border-b border-[var(--glass-border)] shadow-[var(--shadow)]">
-                <nav className="max-w-[1400px] mx-auto flex items-center justify-between p-[16px_30px]">
+                <nav className="max-w-[1400px] mx-auto flex items-center justify-between gap-2 p-[12px_16px] sm:gap-4 sm:p-[16px_30px]">
                     <button className="bg-none border-none cursor-pointer flex flex-col gap-[5px] p-2 z-[5001]" onClick={() => setSidebarOpen(true)} aria-label="Open Navigation Menu">
                         <span className="block w-[28px] h-[3px] bg-[var(--text)] rounded-[3px]"></span>
                         <span className="block w-[28px] h-[3px] bg-[var(--text)] rounded-[3px]"></span>
                         <span className="block w-[28px] h-[3px] bg-[var(--text)] rounded-[3px]"></span>
                     </button>
                     
-                    <Link href={isLoggedIn ? '/about' : '/'} onClick={handleLogoClick} className="font-serif text-[2.2rem] font-bold text-[var(--text)] no-underline">
+                    <Link href={isLoggedIn ? '/about' : '/'} onClick={handleLogoClick} className="font-serif text-[1.4rem] sm:text-[2.2rem] font-bold text-[var(--text)] no-underline whitespace-nowrap">
                         Sketch <span className="text-[var(--accent3)]">Tea</span>
                     </Link>
 

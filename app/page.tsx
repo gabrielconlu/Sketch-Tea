@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-export default function AboutPage() {
+export default function HomePage() {
     return (
         <div className="max-w-[1400px] mx-auto min-h-screen grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] items-center gap-8 lg:gap-[60px] px-4 pt-[112px] pb-14 sm:px-[30px] sm:pt-[140px] sm:pb-20">
             <div className="flex flex-col gap-6">

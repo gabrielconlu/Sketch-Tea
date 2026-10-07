@@ -211,14 +211,14 @@ export default function SubmitOrderPage() {
             </div>
 
             <header className="fixed top-0 left-0 w-full z-[5000] backdrop-blur-[18px] bg-[var(--glass)] border-b border-[var(--glass-border)] shadow-[var(--shadow)]">
-                <nav className="max-w-[1400px] mx-auto grid grid-cols-[1fr_auto_1fr] items-center p-[16px_30px]">
+                <nav className="max-w-[1400px] mx-auto grid grid-cols-[auto_1fr_auto] items-center gap-2 p-[12px_16px] sm:gap-4 sm:p-[16px_30px]">
                     <div className="flex justify-start">
                         <Link href="/payment-methods?service=other-services" className="p-[10px_18px] rounded-xl border border-[var(--glass-border)] bg-[var(--card)] text-[0.9rem] font-semibold text-[var(--text)] transition hover:scale-105 hover:border-[var(--accent3)] no-underline">
                             ← Back
                         </Link>
                     </div>
                     <div className="flex justify-center">
-                        <Link href={isLoggedIn ? '/about' : '/'} onClick={handleLogoClick} className="font-serif text-[2.2rem] font-bold text-[var(--text)] no-underline">
+                        <Link href={isLoggedIn ? '/about' : '/'} onClick={handleLogoClick} className="font-serif text-[1.4rem] sm:text-[2.2rem] font-bold text-[var(--text)] no-underline whitespace-nowrap">
                             Sketch <span className="text-[var(--accent3)]">Tea</span>
                         </Link>
                     </div>

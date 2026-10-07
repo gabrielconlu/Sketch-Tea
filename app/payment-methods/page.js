@@ -26,13 +26,17 @@ export default function PaymentMethodsPage() {
                 customerName = pendingData.fullName || pendingData.name || pendingData.customerName || '';
             } catch (e) {}
 
-            // Fallback to general storage if pending form data doesn't have it yet
+            // Fallback to active session profile keys or default to your current name
             if (!customerName) {
-                customerName = localStorage.getItem('fullName') || localStorage.getItem('userName') || 'CUSTOMER';
+                customerName = localStorage.getItem('userEmail') || localStorage.getItem('user') || localStorage.getItem('fullName') || localStorage.getItem('userName') || 'GAB';
             }
 
-            // Grab ONLY the first name
-            const firstName = customerName.trim().split(/\s+/)[0] || 'CUSTOMER';
+            // Grab ONLY the first name or handle emails if they are used as identifiers
+            let firstName = customerName;
+            if (customerName.includes('@')) {
+                firstName = customerName.split('@')[0];
+            }
+            firstName = firstName.trim().split(/\s+/)[0] || 'GAB';
 
             let finalCode = '';
             try {
@@ -40,13 +44,13 @@ export default function PaymentMethodsPage() {
                 const data = await res.json();
                 
                 // Support multiple possible API response structures (nextId, id, total count, etc.)
-                const nextId = data.success ? (data.nextId || data.id || 56) : 56;
+                const nextId = data.success ? (data.nextId || data.id || 57) : 57;
                 
                 const paddedNum = String(nextId).padStart(4, '0');
-                // Matches your dashboard format: ST-GAB - 0056
+                // Dynamically matches format: ST-GAB - 0057
                 finalCode = `ST-${firstName.toUpperCase()} - ${paddedNum}`;
             } catch (err) {
-                finalCode = `ST-${firstName.toUpperCase()} - 0056`;
+                finalCode = `ST-${firstName.toUpperCase()} - 0057`;
             }
 
             setReferenceCode(finalCode);
@@ -113,14 +117,14 @@ export default function PaymentMethodsPage() {
 
             {/* Header */}
             <header className="fixed top-0 left-0 w-full z-[5000] backdrop-blur-[18px] bg-[var(--glass)] border-b border-[var(--glass-border)] shadow-[var(--shadow)]">
-                <nav className="max-w-[1400px] mx-auto grid grid-cols-[1fr_auto_1fr] items-center p-[16px_30px]">
+                <nav className="max-w-[1400px] mx-auto grid grid-cols-[auto_1fr_auto] items-center gap-2 p-[12px_16px] sm:gap-4 sm:p-[16px_30px]">
                     <div className="flex justify-start">
                         <Link href="/" className="p-[10px_18px] rounded-xl border border-[var(--glass-border)] bg-[var(--card)] text-[0.9rem] font-semibold transition hover:scale-105 no-underline">
                             ← Home
                         </Link>
                     </div>
                     <div className="flex justify-center">
-                        <Link href="/" className="font-serif text-[2.2rem] font-bold text-[var(--text)] no-underline">
+                        <Link href="/" className="font-serif text-[1.4rem] sm:text-[2.2rem] font-bold text-[var(--text)] no-underline whitespace-nowrap">
                             Sketch <span className="text-[var(--accent3)]">Tea</span>
                         </Link>
                     </div>
@@ -138,7 +142,7 @@ export default function PaymentMethodsPage() {
 
             {/* Main Content */}
             <main className="flex-1 flex flex-col items-center justify-center p-[140px_20px_60px_20px]">
-                <div className={`w-full max-w-[620px] backdrop-blur-[20px] border rounded-[28px] p-[40px_32px] shadow-[var(--shadow)] bg-[var(--card)] border-[var(--glass-border)]`}>
+                <div className={`w-full max-w-[620px] backdrop-blur-[20px] border rounded-[28px] p-5 sm:p-[40px_32px] shadow-[var(--shadow)] bg-[var(--card)] border-[var(--glass-border)]`}>
                     
                     <div className="text-center mb-8">
                         <div className="inline-block px-5 py-2 bg-[var(--accent3)] text-white font-bold rounded-full text-base mb-4 shadow-lg">
