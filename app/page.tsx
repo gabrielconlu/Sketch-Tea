@@ -5,7 +5,7 @@ export default function HomePage() {
         <div className="max-w-[1400px] mx-auto min-h-screen grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] items-center gap-8 lg:gap-[60px] px-4 pt-[112px] pb-14 sm:px-[30px] sm:pt-[140px] sm:pb-20">
             <div className="flex flex-col gap-6">
                 <div className="inline-flex items-center gap-2 p-[8px_18px] bg-[var(--card)] border border-[var(--glass-border)] rounded-full text-[0.85rem] font-semibold w-fit text-[var(--accent3)]">
-                    <span>gArt • Stories • Imagination</span>
+                    <span>Art • Stories • Imagination</span>
                 </div>
                 <h1 className="text-5xl sm:text-6xl lg:text-[5.2rem] font-bold leading-[1.1] tracking-tight">
                     Every Cup Begins With A <span className="italic font-normal text-[var(--accent3)]"> Sketch </span>
